@@ -3,12 +3,18 @@ server:
 
 feign:
   client:
-    user-core:
-      url: http://localhost:8081
+    config:
+      default:                # по умолчанию для всех Feign клиентов
+        connectTimeout: 5000
+        readTimeout: 10000
+        loggerLevel: basic
+      transfer-service:
+        url: http://localhost:8085
+        loggerLevel: full  # полное логирование для отладки
 
 spring:
   application:
-    name: payment-orchestrator
+    name: payment-orchestrator-service
 
   kafka:
     bootstrap-servers: kafka:9092
