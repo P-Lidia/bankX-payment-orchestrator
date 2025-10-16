@@ -1,0 +1,53 @@
+server:
+  port: 8086
+
+feign:
+  client:
+    user-core:
+      url: http://localhost:8081
+
+spring:
+  application:
+    name: payment-orchestrator
+
+  kafka:
+    bootstrap-servers: kafka:9092
+    consumer:
+      group-id: payment-orchestrator-group
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "com.bankx.paymentorchestrator.*"
+        spring.json.type.mapping: kafkaEvent:com.bankx.paymentorchestrator.dto.KafkaEvent
+        # Настройки надежности
+        isolation.level: read_committed
+        max.poll.records: 10  # Обработка небольшими батчами для идемпотентности
+    producer:
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 1
+        compression.type: snappy  # алгоритм сжатия сообщения
+        linger.ms: 10  # ожидание, чтобы собрать больше сообщений в один батч
+        batch.size: 16384
+    listener:
+      type: batch
+      ack-mode: manual_immediate
+
+# Кастомные настройки Kafka топиков - дописать
+kafka:
+  topics:
+
+# Micrometer метрики для Kafka, Resilience4j для retry и circuit breaker, management (Actuator) - добавить также в помник
+
+# Логирование
+logging:
+  level:
+    com.bankx.paymentorchestrator: DEBUG
+    org.springframework.kafka: DEBUG
+    org.apache.kafka: WARN
+  # написать паттерн шаблона строки лога, когда будут метрики и трассировка
