@@ -68,18 +68,18 @@ public class PaymentResponse {
 
 
 
-    public static PaymentResponse cardResponse(String paymentId, PaymentStatus status, String message) {
+    public static PaymentResponse cardResponse(String cardPaymentId, PaymentStatus status, String message) {
         return PaymentResponse.builder()
-                .paymentId(paymentId)
+                .cardPaymentId(cardPaymentId)
                 .paymentMethod(PaymentMethod.CARD)
                 .status(status)
                 .message(message)
                 .build();
     }
 
-    public static PaymentResponse walletResponse(String walletId, PaymentStatus status, String message) {
+    public static PaymentResponse walletResponse(String walletPaymentId, PaymentStatus status, String message) {
         return PaymentResponse.builder()
-                .walletId(walletId)
+                .walletPaymentId(walletPaymentId)
                 .paymentMethod(PaymentMethod.WALLET)
                 .status(status)
                 .message(message)
