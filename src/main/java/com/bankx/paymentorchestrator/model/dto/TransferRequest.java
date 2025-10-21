@@ -1,22 +1,20 @@
 package com.bankx.paymentorchestrator.model.dto;
 
-import com.bankx.paymentorchestrator.model.enums.PaymentMethod;
 import lombok.*;
 
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
-import java.util.Map;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentRequest {
-    @NotBlank(message = "sourceAccountId cannot be empty")
-    private String sourceAccountId;
+public class TransferRequest {
+    @NotBlank(message = "fromAccountId cannot be empty")
+    private String fromAccountId;
 
-    @Pattern(regexp = "CARD|WALLET", message = "method can be 'CARD' or 'WALLET' only")
-    private PaymentMethod paymentMethod;
+    @NotBlank(message = "toAccountId cannot be empty")
+    private String toAccountId;
 
     @NotNull(message = "amount cannot be null")
     @DecimalMin(value = "0.01", message = "amount must be more than 0")
@@ -26,14 +24,12 @@ public class PaymentRequest {
     @Size(min = 3, max = 3, message = "currency must be a three-character code")
     private String currency;
 
-    private Map<String, Object> pspData;
-
     @NotBlank(message = "requestId cannot be empty")
     private String requestId;
 
     public void validate() {
-        if (pspData == null && (paymentMethod == PaymentMethod.CARD || paymentMethod == PaymentMethod.WALLET)) {
-            throw new IllegalArgumentException("pspData is required for " + paymentMethod + " method");
+        if (fromAccountId.equals(toAccountId)) {
+            throw new IllegalArgumentException("fromAccountId and toAccountId cannot be the same");
         }
     }
 }
