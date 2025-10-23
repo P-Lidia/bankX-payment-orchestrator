@@ -6,6 +6,7 @@ import lombok.*;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -28,8 +29,8 @@ public class PaymentRequest {
 
     private Map<String, Object> pspData;
 
-    @NotBlank(message = "requestId cannot be empty")
-    private String requestId;
+    @Builder.Default
+    private String requestId = UUID.randomUUID().toString();  // Автоматическая генерация уникального requestId
 
     public void validate() {
         if (pspData == null && (paymentMethod == PaymentMethod.CARD || paymentMethod == PaymentMethod.WALLET)) {
