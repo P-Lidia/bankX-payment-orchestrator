@@ -4,6 +4,7 @@ import lombok.*;
 
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -24,8 +25,8 @@ public class TransferRequest {
     @Size(min = 3, max = 3, message = "currency must be a three-character code")
     private String currency;
 
-    @NotBlank(message = "requestId cannot be empty")
-    private String requestId;
+    @Builder.Default
+    private String requestId = UUID.randomUUID().toString();  // Автоматическая генерация уникального requestId
 
     public void validate() {
         if (fromAccountId.equals(toAccountId)) {

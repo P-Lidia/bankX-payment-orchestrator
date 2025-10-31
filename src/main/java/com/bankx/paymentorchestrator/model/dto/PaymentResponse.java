@@ -94,4 +94,11 @@ public class PaymentResponse {
                 .message(message)
                 .build();
     }
+
+    public static PaymentResponse failedResponse(String message) {
+        return PaymentResponse.builder()
+                .status(PaymentStatus.FAILED)
+                .message(message)
+                .build();  // ID остаются null, paymentMethod тоже null (для ошибок)
+    }
 }

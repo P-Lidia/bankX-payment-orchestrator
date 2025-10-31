@@ -2,8 +2,8 @@ package com.bankx.paymentorchestrator.model.enums;
 
 import lombok.*;
 
-@AllArgsConstructor
-@NoArgsConstructor
+//@AllArgsConstructor
+//@NoArgsConstructor // Можно убрать, если не нужен
 @Getter
 public enum PaymentStatus {
     PENDING("Pending"),
