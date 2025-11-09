@@ -16,6 +16,10 @@ spring:
   application:
     name: payment-orchestrator-service
 
+  scheduler:
+    outbox:
+      interval: 5000 # миллисекунд
+
   kafka:
     bootstrap-servers: kafka:9092
     consumer:
