@@ -23,7 +23,14 @@ public class OutboxEvent {
     private int retryCount;
     private String errorMessage;  // Для ошибок при отправке (для дебага)
 
-    // todo в сервисе платежа надо будет добавить String payload = objectMapper.writeValueAsString(request); - сериализация в JSON
-    /* payload - это те данные, которые потом пойдут в kafkaEvent. */
+    /* todo в сервисе/маппинге надо будет добавить
+        String payload = objectMapper.writeValueAsString(request);  - сериализация в JSON
+        outboxRepository.save(new OutboxEvent(..., payload, ...));
+            или добавить:
+        TransferPayload payload = objectMapper.readValue(json, TransferPayload.class);  - десериализация
+          для перевода String payload в TransferPayload;
+     */
+    // payload - это те бизнес-данные, которые потом пойдут в kafkaEvent.
+    // todo возможно надо будет вынести сериализацию/десериализацию в отдельный класс в util.
 
 }

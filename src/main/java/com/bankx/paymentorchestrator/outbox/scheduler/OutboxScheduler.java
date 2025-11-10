@@ -12,9 +12,19 @@ public class OutboxScheduler {
     private final OutboxRepository outboxRepository;
     private final KafkaPublisher kafkaPublisher;
 
-    @Scheduled(fixedDelayString = "${scheduler.outbox.interval:5000}")
+    private static final int MAX_RETRIES = 3;
+    private static final int BATCH_SIZE = 100;
+
+    @Scheduled(fixedDelayString = "${scheduler.outbox.interval}")
     public void publishOutboxEvents() {
     }
+
+    /*
+     * Очистка старых обработанных событий (для предотвращения роста БД)
+     */
+    @Scheduled(cron = "")
+
+    public void cleanupOldProcessedEvents() {}
 
 }
 
