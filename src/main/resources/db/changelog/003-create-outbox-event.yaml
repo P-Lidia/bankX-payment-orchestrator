@@ -13,12 +13,12 @@ databaseChangeLog:
                     primaryKey: true
                     nullable: false
               - column:
-                  name: requestId
-                  type: VARCHAR(225)
+                  name: correlation_id
+                  type: UUID
                   constraints:
                     nullable: false
               - column:
-                  name: eventType
+                  name: event_type
                   type: VARCHAR(100)
                   defaultValue: "TRANSFER_CREATED"
                   constraints:

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.UUID;
 
 /**
  * DTO для публикации события в Kafka из Outbox.
@@ -17,7 +18,7 @@ import java.time.Instant;
  * При сериализации в JSON структура выглядит как единый объект с вложенным JSON:
  * <pre>{@code
  * {
- *   "requestId": "12345",
+ *   "correlationId": "e4a0915d-1c27-404e-904e",
  *   "eventType": "TRANSFER_CREATED",
  *   "payload": {
  *     "fromAccountId": "A1",
@@ -35,8 +36,9 @@ import java.time.Instant;
 @NoArgsConstructor
 @Builder
 public class KafkaEvent {
-    private String requestId;
+    private UUID correlationId;
     private String eventType;
-    private TransferPayload payload; // String payload;
+    private TransferPayload payload;
     private Instant createdAt;
+    private KafkaEventDescription description;
 }

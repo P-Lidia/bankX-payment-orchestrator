@@ -5,4 +5,3 @@ public enum OutboxStatus {
     PUBLISHED,
     FAILED
 }
-// todo подумать, нужен ли этот класс?
