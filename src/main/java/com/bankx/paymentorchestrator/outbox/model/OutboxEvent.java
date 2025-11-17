@@ -45,7 +45,8 @@ public class OutboxEvent {
     @Builder.Default
     private UUID id = UUID.randomUUID();
     private UUID correlationId;
-    private String eventType;  // для расширяемость, пока что всегда будет "TRANSFER_CREATED"
+    @Builder.Default
+    private String eventType = "TRANSFER_CREATED";  // поле для расширяемость, пока что всегда будет "TRANSFER_CREATED"
     private String payload;
     private OutboxStatus status;
     private Instant createAt;

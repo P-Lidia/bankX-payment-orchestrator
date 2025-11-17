@@ -1,10 +1,13 @@
 package com.bankx.paymentorchestrator.outbox.scheduler;
 
 import com.bankx.paymentorchestrator.kafka.KafkaPublisher;
+import com.bankx.paymentorchestrator.outbox.model.OutboxEvent;
 import com.bankx.paymentorchestrator.outbox.repository.OutboxRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -18,6 +21,16 @@ public class OutboxScheduler {
     @Scheduled(fixedDelayString = "${scheduler.outbox.interval}")
     public void publishOutboxEvents() {
     }
+
+
+
+    public List<OutboxEvent> findUnpublished() {
+        return null;
+    }
+
+    public void markAsPublished(Long id) {
+    }
+
 
     /*
      * Очистка старых обработанных событий (для предотвращения роста БД)
@@ -42,3 +55,5 @@ Retriable publishing:
 
 Transactional outbox:
 Сохранение события в таблицу в рамках транзакции бизнес-операции (очень важно для гарантии доставки). */
+
+// todo если ретрай > maxRetry -> какие дальше действия? ответ клиенту что операция не прошла? Логирование ошибки?

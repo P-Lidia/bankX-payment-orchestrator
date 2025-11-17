@@ -21,6 +21,7 @@ public class OutboxEventRowMapper implements RowMapper<OutboxEvent> {
     @Override
     public OutboxEvent mapRow(ResultSet rs, int rowNum) throws SQLException {
         return OutboxEvent.builder()
+                .id(rs.getObject("id", UUID.class))
                 .correlationId(rs.getObject("correlation_id", UUID.class))
                 .eventType(rs.getString("event_type"))
                 .payload(rs.getString("payload"))

@@ -1,11 +1,9 @@
 package com.bankx.paymentorchestrator.outbox.service;
 
-import com.bankx.paymentorchestrator.outbox.model.OutboxEvent;
+import com.bankx.paymentorchestrator.model.dto.TransferRequest;
 
-import java.util.List;
+import java.util.UUID;
 
 public interface OutboxService {
-    public void saveEvent();
-    public List<OutboxEvent> findUnpublished();
-    public void markAsPublished(Long id); // todo маркировка по одному или тоже листом ??
+    public void saveEvent(TransferRequest request, UUID correlationId);
 }

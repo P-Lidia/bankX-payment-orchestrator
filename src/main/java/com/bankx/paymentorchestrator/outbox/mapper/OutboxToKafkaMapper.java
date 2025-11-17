@@ -33,7 +33,9 @@ public class OutboxToKafkaMapper {
             // todo логирование?
         }
         try {
+            // десериализует JSON-поле payload из OutboxEvent в объект TransferPayload
             TransferPayload payload = objectMapper.readValue(outboxEvent.getPayload(), TransferPayload.class);
+
             return KafkaEvent.builder()
                     .correlationId(outboxEvent.getCorrelationId())
                     .eventType(outboxEvent.getEventType())
