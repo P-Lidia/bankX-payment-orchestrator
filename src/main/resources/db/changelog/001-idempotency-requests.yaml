@@ -1,0 +1,39 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-idempotency-requests
+      author: marrgosha
+      changes:
+        - createTable:
+            tableName: idempotency_requests
+            columns:
+              - column:
+                  name: idempotency_key
+                  type: VARCHAR(255)
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: request_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: payment_status
+                  type: VARCHAR(255)
+                  defaultValue: PENDING
+                  constraints:
+                    nullable: false
+              - column:
+                  name: response_body
+                  type: jsonb
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: "NOW()"
+
+
+
+
+
