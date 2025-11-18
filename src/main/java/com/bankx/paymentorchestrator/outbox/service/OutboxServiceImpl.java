@@ -76,7 +76,6 @@ public class OutboxServiceImpl implements OutboxService {
                 .status(OutboxStatus.NEW)
                 .createAt(Instant.now())
                 .updateAt(Instant.now())
-                .retryCount(0)
                 .build();
 
         outboxRepository.save(outboxEvent);

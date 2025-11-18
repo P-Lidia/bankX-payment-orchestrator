@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 public class KafkaPublisher {
     private final KafkaTemplate<String, KafkaEvent> kafkaTemplate;
 
-    @Value("${kafka.topics.send-outbox-event}")
+    @Value("${kafka.topics.sendOutboxEvent}")
     private String sendEventTopic;
 
     public void send(KafkaEvent event) {
@@ -34,4 +34,3 @@ public class KafkaPublisher {
         }
     }
 }
-

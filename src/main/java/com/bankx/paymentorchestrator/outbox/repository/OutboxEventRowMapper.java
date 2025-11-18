@@ -18,18 +18,28 @@ import java.util.UUID;
 
 public class OutboxEventRowMapper implements RowMapper<OutboxEvent> {
 
+    public static final String ID = "id" ;
+    public static final String CORRELATION_ID = "correlation_id" ;
+    public static final String EVENT_TYPE = "event_type" ;
+    public static final String PAYLOAD = "payload" ;
+    public static final String STATUS = "status" ;
+    public static final String CREATE_AT = "create_at" ;
+    public static final String UPDATE_AT = "update_at" ;
+    public static final String RETRY_COUNT = "retry_count" ;
+    public static final String ERROR_MESSAGE = "error_message" ;
+
     @Override
     public OutboxEvent mapRow(ResultSet rs, int rowNum) throws SQLException {
         return OutboxEvent.builder()
-                .id(rs.getObject("id", UUID.class))
-                .correlationId(rs.getObject("correlation_id", UUID.class))
-                .eventType(rs.getString("event_type"))
-                .payload(rs.getString("payload"))
-                .status(OutboxStatus.valueOf(rs.getString("status")))
-                .createAt(rs.getTimestamp("create_at").toInstant())
-                .updateAt(rs.getTimestamp("update_at").toInstant())
-                .retryCount(rs.getInt("retry_count"))
-                .errorMessage(rs.getString("error_message"))
+                .id(rs.getObject(ID, UUID.class))
+                .correlationId(rs.getObject(CORRELATION_ID, UUID.class))
+                .eventType(rs.getString(EVENT_TYPE))
+                .payload(rs.getString(PAYLOAD))
+                .status(OutboxStatus.valueOf(rs.getString(STATUS)))
+                .createAt(rs.getTimestamp(CREATE_AT).toInstant())
+                .updateAt(rs.getTimestamp(UPDATE_AT).toInstant())
+                .retryCount(rs.getInt(RETRY_COUNT))
+                .errorMessage(rs.getString(ERROR_MESSAGE))
                 .build();
     }
 }

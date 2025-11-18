@@ -1,7 +1,6 @@
 package com.bankx.paymentorchestrator.outbox.repository;
 
 import com.bankx.paymentorchestrator.outbox.model.OutboxEvent;
-import com.bankx.paymentorchestrator.outbox.model.OutboxStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -60,49 +59,91 @@ public class OutboxRepository {
     }
 
     /**
-     * Находит события по указанному статусу.
-     * <p>Используется для получения списка событий, которые нужно обработать или отправить.
+     * Находит события со статусом NEW.
+     * <p>Используется для получения списка событий, которые нужно отправить.
      *
-     * @param status статус события для фильтрации (например, NEW или FAILED)
-     * @return список событий с указанным статусом
+     * @param batchSize максимальное количество событий в выборке
+     * @return список событий, отсортированных по времени создания (ASC)
      */
-    public List<OutboxEvent> findByStatus(OutboxStatus status) {
+    public List<OutboxEvent> findByStatusNew(int batchSize) {
         return jdbcTemplate.query(
-                "SELECT * FROM outbox_events WHERE status=? ORDER BY create_at ASC",
+                "SELECT * FROM outbox_events WHERE status='NEW' ORDER BY create_at ASC LIMIT ?",
                 new OutboxEventRowMapper(),
-                status.name());
+                batchSize);
+    }
+
+    /**
+     * Находит события, ранее завершившиеся ошибкой, но ещё не достигшие лимита повторных попыток.
+     * <p>Используется шедулером для ретраев.
+     *
+     * @param maxRetries максимальное допустимое количество попыток
+     * @param batchSize  максимальное количество записей в выборке
+     * @return список событий со статусом {@code FAILED} и {@code retry_count < maxRetries},
+     * отсортированных по времени последнего обновления
+     */
+    public List<OutboxEvent> findByStatusFailed(int maxRetries, int batchSize) {
+        return jdbcTemplate.query("""
+                        SELECT * FROM outbox_events
+                        WHERE status='FAILED' AND retry_count < ?
+                        ORDER BY update_at ASC
+                        LIMIT ?
+                        """,
+                new OutboxEventRowMapper(),
+                maxRetries,
+                batchSize);
     }
 
     /**
      * Обновляет статус события на {@code PUBLISHED}.
+     * <p>
+     * * <p>Также очищает {@code error_message} (если ранее были неудачные попытки отправки)
+     * и обновляет поле {@code update_at}.
      *
      * @param id идентификатор события
      */
     public void markAsPublished(UUID id) {
-        jdbcTemplate.update("UPDATE outbox_events SET status='PUBLISHED' WHERE id=?", id);
+        jdbcTemplate.update("""
+                        UPDATE outbox_events
+                        SET status='PUBLISHED', error_message=NULL, update_at=NOW()
+                        WHERE id=?
+                        """,
+                id
+        );
     }
 
     /**
-     * Обновляет статус события на {@code FAILED} и сохраняет сообщение об ошибке.
+     * Обновляет статус события на {@code FAILED}, сохраняет сообщение об ошибке
+     * и увеличивает значение {@code retry_count} на 1
+     * <p>Также обновляет поле {@code update_at}.
      *
      * @param id           идентификатор события
      * @param errorMessage описание ошибки
      */
     public void markAsFailed(UUID id, String errorMessage) {
-        jdbcTemplate.update(
-                "UPDATE outbox_events SET status='FAILED', error_message=? WHERE id=?", errorMessage, id
+        jdbcTemplate.update("""
+                        UPDATE outbox_events
+                        SET status='FAILED', error_message=?, retry_count=retry_count + 1, update_at=NOW()
+                        WHERE id=?
+                        """,
+                errorMessage,
+                id
         );
     }
 
     /**
-     * Увеличивает значение {@code retry_count} для события.
-     * <p>Используется при повторных попытках отправки события для ограничения количества попыток
+     * Помечает события как {@code DEAD}, если они достигли или превысили максимальное число повторных попыток.
+     * <p>Используется для формирования "мёртвых" сообщений (dead-letter).
      *
-     * @param id         идентификатор события
-     * @param retryCount новое значение счетчика повторных попыток
+     * @param maxRetries допустимый предел повторных попыток
      */
-    public void incrementRetryCount(UUID id, int retryCount) {
-        jdbcTemplate.update("UPDATE outbox_events SET retry_count=? WHERE id=?", retryCount, id);
+    public void markAsDead(int maxRetries) {
+        jdbcTemplate.update("""
+                        UPDATE outbox_events
+                        SET status='DEAD', update_at=NOW()
+                        WHERE status='FAILED' AND retry_count >= ?
+                        """,
+                maxRetries
+        );
     }
 
     /**

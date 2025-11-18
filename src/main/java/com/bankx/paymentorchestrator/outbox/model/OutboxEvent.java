@@ -51,7 +51,8 @@ public class OutboxEvent {
     private OutboxStatus status;
     private Instant createAt;
     private Instant updateAt;
-    private int retryCount;
+    @Builder.Default
+    private int retryCount = 0;
     private String errorMessage;  // Для ошибок при отправке (для дебага)
 
     /* todo в сервисе/маппинге надо будет добавить
