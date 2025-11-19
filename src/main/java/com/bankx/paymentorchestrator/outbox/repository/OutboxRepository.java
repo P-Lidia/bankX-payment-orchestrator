@@ -65,7 +65,7 @@ public class OutboxRepository {
      * @param batchSize максимальное количество событий в выборке
      * @return список событий, отсортированных по времени создания (ASC)
      */
-    public List<OutboxEvent> findByStatusNew(int batchSize) {
+    public List<OutboxEvent> findUnpublishedNew(int batchSize) {
         return jdbcTemplate.query(
                 "SELECT * FROM outbox_events WHERE status='NEW' ORDER BY create_at ASC LIMIT ?",
                 new OutboxEventRowMapper(),

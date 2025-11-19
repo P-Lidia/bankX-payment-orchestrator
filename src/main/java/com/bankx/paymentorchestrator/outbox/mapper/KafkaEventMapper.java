@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class OutboxToKafkaMapper {
+public class KafkaEventMapper {
 
     private final ObjectMapper objectMapper;
 
