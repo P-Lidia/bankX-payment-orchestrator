@@ -11,7 +11,6 @@ databaseChangeLog:
                   type: uuid
                   constraints:
                     primaryKey: true
-                    nullable: false
               - column:
                   name: request_id
                   type: VARCHAR(255)
@@ -55,3 +54,16 @@ databaseChangeLog:
                   name: updated_at
                   type: timestamp with time zone
                   defaultValueComputed: "NOW()"
+        - addForeignKeyConstraint:
+            baseTableName: transfer_pay
+            baseColumnNames: request_id
+            referencedTableName: idempotency_requests
+            referencedColumnNames: request_id
+            constraintName: fk_transfer_pay_idempotency_requests
+        - createIndex:
+            tableName: transfer_pay
+            indexName: idx_correlation_id
+            columns:
+              - column:
+                  name: correlation_id
+
