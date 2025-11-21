@@ -19,7 +19,7 @@ databaseChangeLog:
                     unique: true
               - column:
                   name: payment_status
-                  type: VARCHAR(255)
+                  type: VARCHAR(20)
                   defaultValue: PENDING
                   constraints:
                     nullable: false
@@ -30,7 +30,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: created_at
-                  type: TIMESTAMP
+                  type: TIMESTAMP WITH TIME ZONE
                   defaultValueComputed: "NOW()"
 
 
