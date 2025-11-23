@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 @Slf4j
 @Component
@@ -27,22 +28,33 @@ public class OutboxScheduler {
     private static final int BATCH_SIZE = 100;
 
     @Scheduled(fixedDelayString = "${scheduler.outbox.interval}")
-    public void publishOutboxEvents() {
+    public void publishNewOutboxEvents() {
+        processPublishEvents(() -> outboxRepository.findByStatusNew(BATCH_SIZE),
+                "Start publish processing for {} NEW events");
+    }  // в логе после for {} указывается количество обрабатываемых событий
+
+    // initialDelay - сдвигает запуск задачи относительно первичного времени старта(fixedDelayString)
+    @Scheduled(fixedDelayString = "${scheduler.outbox.interval}", initialDelay = 2000)
+    public void publishFailedOutboxEvents() {
+        processPublishEvents(() -> outboxRepository.findByStatusFailed(MAX_RETRIES, BATCH_SIZE),
+                "Start retry publish processing for {} FAILED events");
+    }
+
+    private void processPublishEvents(Supplier<List<OutboxEvent>> fetchEvents, String logMessage) {
         try {
-            List<OutboxEvent> unpublishedEvents = outboxRepository.findUnpublishedNew(BATCH_SIZE);
+            // делаем выборку неопубликованных событий из БД
+            List<OutboxEvent> unpublishedEvents = fetchEvents.get();
 
             if (!unpublishedEvents.isEmpty()) {
-                log.debug("Start publish processing for {} new events", unpublishedEvents.size());
+                log.debug(logMessage, unpublishedEvents.size());
 
                 // Обрабатываем каждое событие
                 for (OutboxEvent event : unpublishedEvents) {
                     processSingleEvent(event);
                 }
             }
-
         } catch (Exception e) {
-            // Если SELECT из БД или что-то глобальное упадет
-            log.error("Failed to fetch new outbox events from DB", e);
+            log.error("Failed to fetch outbox events from DB", e);
         }
     }
 
@@ -61,9 +73,8 @@ public class OutboxScheduler {
 
             // Обрабатываем результат отправки (меняем статус)
             handleSendResult(future, event);
-
         } catch (Exception e) {
-            log.error("Fail publish processing for event id={}, correlationId={}, status={}",
+            log.error("Failed to process publish for event  id={}, correlationId={}, status={}",
                     event.getId(),
                     event.getCorrelationId(),
                     event.getStatus(),
@@ -80,10 +91,11 @@ public class OutboxScheduler {
                 try {
                     // меняем статус в БД на Failed
                     outboxRepository.markAsFailed(event.getId(), exception.getMessage());
-                    log.error("Failed to send outbox event id={}, correlationId={}, status={}",
+                    log.error("Failed to send outbox event (status={}) id={}, correlationId={}",
+                            event.getStatus(),
                             event.getId(),
-                            event.getCorrelationId(),
-                            event.getStatus());
+                            event.getCorrelationId());
+
                 } catch (Exception ex) {
                     // Если update в БД упадет
                     log.error("Failed to update status to FAILED for outbox event id={}, correlationId={}",
@@ -96,11 +108,11 @@ public class OutboxScheduler {
                     // меняем статус в БД на Published
                     outboxRepository.markAsPublished(event.getId());
                     log.debug(
-                            "Successfully send outbox event id={}, topic={}, partition={}, offset={}",
+                            "Successfully sent outbox event id={}, topic={}, partition={}, offset={}",
                             event.getId(),
                             result.getRecordMetadata().topic(),
                             result.getRecordMetadata().partition(),
-                            result.getRecordMetadata().offset()
+                            result.getRecordMetadata().offset()  // порядковый номер внутри партиции
                     );
                 } catch (Exception ex) {
                     log.error("Failed to update status to PUBLISHED for outbox event id={}, correlationId={}",
@@ -111,7 +123,6 @@ public class OutboxScheduler {
             }
         });
     }
-
 
 
     /*
