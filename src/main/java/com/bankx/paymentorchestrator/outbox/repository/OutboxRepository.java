@@ -147,15 +147,20 @@ public class OutboxRepository {
     }
 
     /**
-     * Удаляет события старше указанного времени.
+     * Удаляет события со статусом PUBLISHED старше указанного времени.
      * <p>
      * Метод возвращает количество удалённых записей для логирования.
      *
-     * @param olderThan период, указывающий, какие события считать старыми
+     * @param retentionDays период, указывающий, какие события считать старыми
      * @return количество удалённых строк
      */
-    public int deleteOldEvents(Duration olderThan) {
-        Instant cutoff = Instant.now().minus(olderThan);
-        return jdbcTemplate.update("DELETE FROM outbox_events WHERE create_at < ?", Timestamp.from(cutoff));
+    public int deleteOldEvents(Duration retentionDays) {
+        Instant cutoff = Instant.now().minus(retentionDays);
+        return jdbcTemplate.update("""
+                        DELETE FROM outbox_events
+                        WHERE status = 'PUBLISHED'
+                        AND create_at < ?
+                        """,
+                Timestamp.from(cutoff));
     }
 }

@@ -12,9 +12,49 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
+
+/**
+ * Планировщик задач для обработки событий Outbox.
+ *
+ * <p>Основные задачи класса:
+ * <ul>
+ *     <li>Публикация новых событий Outbox в Kafka.</li>
+ *     <li>Повторная отправка событий со статусом FAILED с ограничением по количеству попыток.</li>
+ *     <li>Очистка старых обработанных событий для предотвращения роста базы данных.</li>
+ * </ul>
+ *
+ * <p>Особенности реализации:
+ * <ul>
+ *     <li>Обработка событий пакетами (batch) для новых и неудачных событий.</li>
+ *     <li>Асинхронная отправка событий в Kafka с использованием CompletableFuture.</li>
+ *     <li>Автоматическое обновление статуса события в базе: {@code PUBLISHED} или {@code FAILED}.</li>
+ *     <li>Очистка старых событий с учетом периода хранения (RETENTION_DAYS).</li>
+ * </ul>
+ *
+ * <p>Зависимости:
+ * <ul>
+ *     <li>{@link OutboxRepository} — работа с таблицей outbox_events в БД.</li>
+ *     <li>{@link KafkaPublisher} — отправка событий в Kafka.</li>
+ *     <li>{@link KafkaEventMapper} — преобразование OutboxEvent в KafkaEvent.</li>
+ * </ul>
+ *
+ * <p>Планируемые задачи:
+ * <ul>
+ *     <li>{@link #publishNewOutboxEvents()} — публикация новых событий.</li>
+ *     <li>{@link #publishFailedOutboxEvents()} — повторная отправка неудачных событий.</li>
+ *     <li>{@link #cleanupOldPublishedEvents()} — удаление старых событий раз в неделю.</li>
+ * </ul>
+ *
+ * <p>Логирование:
+ * <ul>
+ *     <li>DEBUG — начало и успешная обработка событий.</li>
+ *     <li>ERROR — ошибки при выборке событий, отправке в Kafka или обновлении статусов в БД.</li>
+ * </ul>
+ */
 
 @Slf4j
 @Component
@@ -26,13 +66,28 @@ public class OutboxScheduler {
 
     private static final int MAX_RETRIES = 3;
     private static final int BATCH_SIZE = 100;
+    private static final Duration RETENTION_DAYS = Duration.ofDays(30); // период хранения событий в БД
 
+    /**
+     * Публикация новых событий Outbox в Kafka.
+     * <p>Выбирает события со статусом NEW пакетами по BATCH_SIZE,
+     * и отправляет каждое событие через {@link #processSingleEvent(OutboxEvent)}.
+     * Запускается с интервалом, заданным в application scheduler.outbox.interval.
+     */
     @Scheduled(fixedDelayString = "${scheduler.outbox.interval}")
     public void publishNewOutboxEvents() {
         processPublishEvents(() -> outboxRepository.findByStatusNew(BATCH_SIZE),
                 "Start publish processing for {} NEW events");
     }  // в логе после for {} указывается количество обрабатываемых событий
 
+
+    /**
+     * Повторная отправка событий со статусом FAILED.
+     * <p>Выбирает события с количеством повторных попыток меньше MAX_RETRIES и отправляет каждое
+     * через {@link #processSingleEvent(OutboxEvent)}.
+     * Запускается с интервалом scheduler.outbox.interval с задержкой initialDelay для предотвращения
+     * совпадения с публикацией событий со статусом NEW.
+     */
     // initialDelay - сдвигает запуск задачи относительно первичного времени старта(fixedDelayString)
     @Scheduled(fixedDelayString = "${scheduler.outbox.interval}", initialDelay = 2000)
     public void publishFailedOutboxEvents() {
@@ -40,6 +95,14 @@ public class OutboxScheduler {
                 "Start retry publish processing for {} FAILED events");
     }
 
+    /**
+     * Универсальный метод обработки событий Outbox.
+     * <p>Принимает {@link Supplier} для получения списка событий и лог-сообщение для дебага.
+     * Обрабатывает каждое событие через {@link #processSingleEvent(OutboxEvent)}.
+     *
+     * @param fetchEvents Supplier, возвращающий список событий для обработки.
+     * @param logMessage  Шаблон лог-сообщения, используется в log.debug.
+     */
     private void processPublishEvents(Supplier<List<OutboxEvent>> fetchEvents, String logMessage) {
         try {
             // делаем выборку неопубликованных событий из БД
@@ -58,6 +121,14 @@ public class OutboxScheduler {
         }
     }
 
+    /**
+     * Обработка одного события Outbox.
+     * <p>Преобразует OutboxEvent в KafkaEvent через {@link KafkaEventMapper},
+     * отправляет событие в Kafka через {@link KafkaPublisher#send(KafkaEvent)},
+     * и обрабатывает результат асинхронно через {@link #handleSendResult(CompletableFuture, OutboxEvent)}.
+     *
+     * @param event событие Outbox для отправки
+     */
     private void processSingleEvent(OutboxEvent event) {
         log.debug("Start publish processing for event id={}, status={}", event.getId(), event.getStatus());
         try {
@@ -83,6 +154,14 @@ public class OutboxScheduler {
         }
     }
 
+    /**
+     * Обработка результата отправки события в Kafka.
+     * <p>Использует {@link CompletableFuture#whenComplete} для отслеживаниясуспешной отправки или ошибки.
+     * В зависимости от результата обновляет статус события в БД.
+     *
+     * @param future CompletableFuture с результатом отправки события
+     * @param event исходное событие Outbox
+     */
     private void handleSendResult(CompletableFuture<SendResult<String, KafkaEvent>> future, OutboxEvent event) {
         future.whenComplete((result, exception) -> {
 
@@ -124,28 +203,26 @@ public class OutboxScheduler {
         });
     }
 
-
-    /*
-     * Очистка старых обработанных событий (для предотвращения роста БД)
+    /**
+     * Очистка старых обработанных событий PUBLISHED для предотвращения роста базы данных.
+     * <p>Выбирает события старше RETENTION_DAYS и удаляет их. Запускается раз в неделю по cron.
+     * <p>cron = "0 0 3 ? * MON" → каждый понедельник в 03:00
      */
-    @Scheduled(cron = "")
-
-    public void cleanupOldProcessedEvents() {
+    @Scheduled(cron = "0 0 3 ? * MON")
+    public void cleanupOldPublishedEvents() {
+        try {
+            // получаем количество удаленных записей
+            int deleted = outboxRepository.deleteOldEvents(RETENTION_DAYS);
+            log.info("Outbox cleanup completed: deleted {} PUBLISHED events older than {} days",
+                    deleted, RETENTION_DAYS.toDays());
+        } catch (Exception e) {
+            log.error("Failed to clean up old PUBLISHED outbox events", e);
+        }
     }
-
 }
 
 /* todo:
+    Трассировка / observability: добавь логи и метрики (published, failed, latency).
+    В методе cleanupOldPublishedEvents() - можно также реализовать удаление батчами или асинхронное удаление
+ */
 
-Retriable publishing:
-Нужен механизм повторной отправки (status = FAILED → NEW через n секунд).
-Можно сделать отдельный scheduler для retry.
-
-Трассировка / observability:
-Добавь логи и метрики (published, failed, latency).
-
-Оптимизация:
-Чтобы не забирать слишком много записей, используй лимит (например, 100 за раз).
-
-Transactional outbox:
-Сохранение события в таблицу в рамках транзакции бизнес-операции (очень важно для гарантии доставки). */
