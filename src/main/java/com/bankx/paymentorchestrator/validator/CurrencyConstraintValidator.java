@@ -1,5 +1,6 @@
 package com.bankx.paymentorchestrator.validator;
 
+import com.bankx.paymentorchestrator.exception.InvalidCurrencyException;
 import com.bankx.paymentorchestrator.service.validation.CurrencyValidationService;
 import com.bankx.paymentorchestrator.validator.annotation.ValidCurrency;
 import jakarta.validation.ConstraintValidator;
@@ -15,6 +16,14 @@ public class CurrencyConstraintValidator implements ConstraintValidator<ValidCur
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        return validationService.isValidCurrency(value);
+        try {
+            return validationService.isValidCurrency(value);
+        } catch (InvalidCurrencyException ex) {
+            context.disableDefaultConstraintViolation();
+            context
+                    .buildConstraintViolationWithTemplate(ex.getMessage())
+                    .addConstraintViolation();
+            return false;
+        }
     }
 }

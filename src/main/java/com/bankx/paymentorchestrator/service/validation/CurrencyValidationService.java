@@ -1,5 +1,6 @@
 package com.bankx.paymentorchestrator.service.validation;
 
+import com.bankx.paymentorchestrator.exception.InvalidCurrencyException;
 import com.bankx.paymentorchestrator.model.enums.Currency;
 import org.springframework.stereotype.Service;
 
@@ -7,14 +8,14 @@ import org.springframework.stereotype.Service;
 public class CurrencyValidationService {
     public boolean isValidCurrency(String currency) {
         if (currency == null || currency.isBlank()) {
-            return false;
+            throw new InvalidCurrencyException(currency);
         }
 
         try {
             Currency.valueOf(currency.trim().toUpperCase());
             return true;
         } catch (IllegalArgumentException ex) {
-            return false;
+            throw new InvalidCurrencyException(currency);
         }
     }
 }
