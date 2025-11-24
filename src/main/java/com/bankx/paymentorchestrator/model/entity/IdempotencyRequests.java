@@ -25,7 +25,7 @@ public class IdempotencyRequests {
     @Column(name = "idempotency_key", nullable = false, length = 255)
     private String idempotencyKey;
 
-    @Column(name = "request_id", nullable = false, length = 255, unique = true)
+    @Column(name = "request_id", nullable = false, length = 255, unique = true, updatable = false)
     private String requestId;
 
     @Column(name = "payment_status", nullable = false, length = 20)

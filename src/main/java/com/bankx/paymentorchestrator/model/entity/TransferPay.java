@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -23,14 +25,11 @@ public class TransferPay {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id")
     private UUID id;
 
-    @Column(name = "request_id", nullable = false, length = 255, unique = true)
-    private String requestId;
-
-    @Column(name = "correlation_id", nullable = false)
+    @Column(name = "correlation_id", nullable = false, updatable = false)
     private UUID correlationId;
 
     @Column(name = "from_account_id", nullable = false)
@@ -49,14 +48,16 @@ public class TransferPay {
     @Column(name = "metadata", columnDefinition = "jsonb")
     private String metadata;
 
-    @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 
-    @Column(name = "updated_at", nullable = false, updatable = false, insertable = false)
+    @UpdateTimestamp
+    @Column(name = "updated_at")
     private Instant updatedAt;
 
     @ManyToOne
-    @JoinColumn(name = "request_id", nullable = false)
+    @JoinColumn(name = "idempotency_key", nullable = false)
     private IdempotencyRequests request;
 
 }
