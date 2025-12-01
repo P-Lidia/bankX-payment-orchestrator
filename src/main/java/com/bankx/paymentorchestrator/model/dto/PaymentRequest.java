@@ -1,6 +1,7 @@
 package com.bankx.paymentorchestrator.model.dto;
 
 import com.bankx.paymentorchestrator.model.enums.PaymentMethod;
+import com.bankx.paymentorchestrator.validator.annotation.ValidCurrency;
 import lombok.*;
 
 import jakarta.validation.constraints.*;
@@ -24,7 +25,11 @@ public class PaymentRequest {
     private BigDecimal amount;
 
     @NotBlank(message = "currency cannot be empty")
-    @Size(min = 3, max = 3, message = "currency must be a three-character code")
+    @Pattern(
+            regexp = "^[A-Z]{3}$",
+            message = "currency must contain exactly three uppercase Latin letters"
+    )
+    @ValidCurrency
     private String currency;
 
     private Map<String, Object> pspData;
