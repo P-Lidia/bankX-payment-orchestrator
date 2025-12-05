@@ -67,7 +67,7 @@ public class OutboxRepository {
      */
     public List<OutboxEvent> findByStatusNew(int batchSize) {
         return jdbcTemplate.query(
-                "SELECT * FROM outbox_events WHERE status='NEW' ORDER BY create_at ASC LIMIT ?",
+                "SELECT * FROM outbox_events WHERE status='NEW' ORDER BY created_at ASC LIMIT ?",
                 new OutboxEventRowMapper(),
                 batchSize);
     }
@@ -85,7 +85,7 @@ public class OutboxRepository {
         return jdbcTemplate.query("""
                         SELECT * FROM outbox_events
                         WHERE status='FAILED' AND retry_count < ?
-                        ORDER BY update_at ASC
+                        ORDER BY updated_at ASC
                         LIMIT ?
                         """,
                 new OutboxEventRowMapper(),
@@ -97,14 +97,14 @@ public class OutboxRepository {
      * Обновляет статус события на {@code PUBLISHED}.
      * <p>
      * * <p>Также очищает {@code error_message} (если ранее были неудачные попытки отправки)
-     * и обновляет поле {@code update_at}.
+     * и обновляет поле {@code updated_at}.
      *
      * @param id идентификатор события
      */
     public void markAsPublished(UUID id) {
         jdbcTemplate.update("""
                         UPDATE outbox_events
-                        SET status='PUBLISHED', error_message=NULL, update_at=NOW()
+                        SET status='PUBLISHED', error_message=NULL, updated_at=NOW()
                         WHERE id=?
                         """,
                 id
@@ -114,7 +114,7 @@ public class OutboxRepository {
     /**
      * Обновляет статус события на {@code FAILED}, сохраняет сообщение об ошибке
      * и увеличивает значение {@code retry_count} на 1
-     * <p>Также обновляет поле {@code update_at}.
+     * <p>Также обновляет поле {@code updated_at}.
      *
      * @param id           идентификатор события
      * @param errorMessage описание ошибки
@@ -122,7 +122,7 @@ public class OutboxRepository {
     public void markAsFailed(UUID id, String errorMessage) {
         jdbcTemplate.update("""
                         UPDATE outbox_events
-                        SET status='FAILED', error_message=?, retry_count=retry_count + 1, update_at=NOW()
+                        SET status='FAILED', error_message=?, retry_count=retry_count + 1, updated_at=NOW()
                         WHERE id=?
                         """,
                 errorMessage,
@@ -139,7 +139,7 @@ public class OutboxRepository {
     public void markAsDead(int maxRetries) {
         jdbcTemplate.update("""
                         UPDATE outbox_events
-                        SET status='DEAD', update_at=NOW()
+                        SET status='DEAD', updated_at=NOW()
                         WHERE status='FAILED' AND retry_count >= ?
                         """,
                 maxRetries
@@ -159,7 +159,7 @@ public class OutboxRepository {
         return jdbcTemplate.update("""
                         DELETE FROM outbox_events
                         WHERE status = 'PUBLISHED'
-                        AND create_at < ?
+                        AND created_at < ?
                         """,
                 Timestamp.from(cutoff));
     }

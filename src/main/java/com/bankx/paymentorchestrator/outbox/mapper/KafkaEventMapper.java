@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
- * Класс OutboxMapper отвечает за преобразование событий из таблицы Outbox
+ * Класс KafkaEventMapper отвечает за преобразование событий из таблицы Outbox
  * (OutboxEvent) в объекты KafkaEvent для публикации в Kafka.
  *
  * <p>Основная задача:

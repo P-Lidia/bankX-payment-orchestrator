@@ -18,15 +18,15 @@ import java.util.UUID;
 
 public class OutboxEventRowMapper implements RowMapper<OutboxEvent> {
 
-    public static final String ID = "id" ;
-    public static final String CORRELATION_ID = "correlation_id" ;
-    public static final String EVENT_TYPE = "event_type" ;
-    public static final String PAYLOAD = "payload" ;
-    public static final String STATUS = "status" ;
-    public static final String CREATED_AT = "create_at" ;
-    public static final String UPDATED_AT = "update_at" ;
-    public static final String RETRY_COUNT = "retry_count" ;
-    public static final String ERROR_MESSAGE = "error_message" ;
+    public static final String ID = "id";
+    public static final String CORRELATION_ID = "correlation_id";
+    public static final String EVENT_TYPE = "event_type";
+    public static final String PAYLOAD = "payload";
+    public static final String STATUS = "status";
+    public static final String CREATED_AT = "created_at";
+    public static final String UPDATED_AT = "updated_at";
+    public static final String RETRY_COUNT = "retry_count";
+    public static final String ERROR_MESSAGE = "error_message";
 
     @Override
     public OutboxEvent mapRow(ResultSet rs, int rowNum) throws SQLException {
