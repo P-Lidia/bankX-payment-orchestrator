@@ -66,16 +66,21 @@ public class OutboxServiceImpl implements OutboxService {
     private final ObjectMapper objectMapper;
     private final TransferMapper transferMapper;
 
+    private static final String EVENT_TYPE_CREATED = "TRANSFER_CREATED";
+
     public void saveEvent(TransferRequest request, UUID correlationId) {
         // сериализация объекта TransferPayload в JSON
         String payloadJson = convertToJson(transferMapper.toTransferPayload(request));
 
         OutboxEvent outboxEvent = OutboxEvent.builder()
+                .id(UUID.randomUUID())
                 .correlationId(correlationId)
+                .eventType(EVENT_TYPE_CREATED)
                 .payload(payloadJson)
                 .status(OutboxStatus.NEW)
                 .createAt(Instant.now())
                 .updateAt(Instant.now())
+                .retryCount(0)
                 .build();
 
         outboxRepository.save(outboxEvent);

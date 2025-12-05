@@ -25,7 +25,6 @@ public class KafkaPublisher {
     @Value("${kafka.topics.sendOutboxEvent}")
     private String sendEventTopic;
 
-
     /**
      * Отправляет событие в Kafka и возвращает CompletableFuture, чтобы шедулер мог обработать результат отправки.
      *

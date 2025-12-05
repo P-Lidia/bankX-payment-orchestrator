@@ -76,8 +76,10 @@ public class OutboxScheduler {
      */
     @Scheduled(fixedDelayString = "${scheduler.outbox.interval}")
     public void publishNewOutboxEvents() {
-        processPublishEvents(() -> outboxRepository.findByStatusNew(BATCH_SIZE),
-                "Start publish processing for {} NEW events");
+        processPublishEvents(
+                () -> outboxRepository.findByStatusNew(BATCH_SIZE),
+                "Start publish processing for {} NEW events"
+        );
     }  // в логе после for {} указывается количество обрабатываемых событий
 
 
@@ -91,8 +93,10 @@ public class OutboxScheduler {
     // initialDelay - сдвигает запуск задачи относительно первичного времени старта(fixedDelayString)
     @Scheduled(fixedDelayString = "${scheduler.outbox.interval}", initialDelay = 2000)
     public void publishFailedOutboxEvents() {
-        processPublishEvents(() -> outboxRepository.findByStatusFailed(MAX_RETRIES, BATCH_SIZE),
-                "Start retry publish processing for {} FAILED events");
+        processPublishEvents(
+                () -> outboxRepository.findByStatusFailed(MAX_RETRIES, BATCH_SIZE),
+                "Start retry publish processing for {} FAILED events"
+        );
     }
 
     /**

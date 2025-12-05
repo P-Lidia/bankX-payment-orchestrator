@@ -42,27 +42,13 @@ import java.util.UUID;
 @Data
 @Builder
 public class OutboxEvent {
-    @Builder.Default
-    private UUID id = UUID.randomUUID();
+    private UUID id;
     private UUID correlationId;
-    @Builder.Default
-    private String eventType = "TRANSFER_CREATED";  // поле для расширяемость, пока что всегда будет "TRANSFER_CREATED"
-    private String payload;
+    private String eventType;  // поле для расширяемость, пока что всегда будет "TRANSFER_CREATED"
+    private String payload;  // бизнес-данные, которые потом пойдут в kafkaEvent.
     private OutboxStatus status;
     private Instant createAt;
     private Instant updateAt;
-    @Builder.Default
-    private int retryCount = 0;
+    private int retryCount;
     private String errorMessage;  // Для ошибок при отправке (для дебага)
-
-    /* todo в сервисе/маппинге надо будет добавить
-        String payload = objectMapper.writeValueAsString(request);  - сериализация в JSON
-        outboxRepository.save(new OutboxEvent(..., payload, ...));
-            или добавить:
-        TransferPayload payload = objectMapper.readValue(json, TransferPayload.class);  - десериализация
-          для перевода String payload в TransferPayload;
-     */
-    // payload - это те бизнес-данные, которые потом пойдут в kafkaEvent.
-    // todo возможно надо будет вынести сериализацию/десериализацию в отдельный класс в util.
-
 }

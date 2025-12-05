@@ -4,5 +4,5 @@ public enum OutboxStatus {
     NEW,
     PUBLISHED,
     FAILED,
-    DEAD  // статус для событий, которые так и не отправились
+    DEAD  // todo статус для событий, которые так и не отправились
 }

@@ -18,7 +18,9 @@ public enum KafkaEventDescription {
      */
     INTERNAL_TRANSFER("Internal transfer between accounts"),
 
-    /** Внутренний транш, инициализированный внешним переводом (через PSP). */
+    /**
+     * Внутренний транш, для внешнего перевода (через PSP).
+     */
     INTERNAL_TRANSFER_FOR_EXTERNAL_PAYMENT("Internal leg of an external payment transaction");
 
     private final String message;
