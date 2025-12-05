@@ -23,8 +23,8 @@ public class OutboxEventRowMapper implements RowMapper<OutboxEvent> {
     public static final String EVENT_TYPE = "event_type" ;
     public static final String PAYLOAD = "payload" ;
     public static final String STATUS = "status" ;
-    public static final String CREATE_AT = "create_at" ;
-    public static final String UPDATE_AT = "update_at" ;
+    public static final String CREATED_AT = "create_at" ;
+    public static final String UPDATED_AT = "update_at" ;
     public static final String RETRY_COUNT = "retry_count" ;
     public static final String ERROR_MESSAGE = "error_message" ;
 
@@ -36,8 +36,8 @@ public class OutboxEventRowMapper implements RowMapper<OutboxEvent> {
                 .eventType(rs.getString(EVENT_TYPE))
                 .payload(rs.getString(PAYLOAD))
                 .status(OutboxStatus.valueOf(rs.getString(STATUS)))
-                .createAt(rs.getTimestamp(CREATE_AT).toInstant())
-                .updateAt(rs.getTimestamp(UPDATE_AT).toInstant())
+                .createdAt(rs.getTimestamp(CREATED_AT).toInstant())
+                .updatedAt(rs.getTimestamp(UPDATED_AT).toInstant())
                 .retryCount(rs.getInt(RETRY_COUNT))
                 .errorMessage(rs.getString(ERROR_MESSAGE))
                 .build();

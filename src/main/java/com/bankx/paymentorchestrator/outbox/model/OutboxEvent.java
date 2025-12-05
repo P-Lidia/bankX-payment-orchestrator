@@ -47,8 +47,8 @@ public class OutboxEvent {
     private String eventType;  // поле для расширяемость, пока что всегда будет "TRANSFER_CREATED"
     private String payload;  // бизнес-данные, которые потом пойдут в kafkaEvent.
     private OutboxStatus status;
-    private Instant createAt;
-    private Instant updateAt;
+    private Instant createdAt;
+    private Instant updatedAt;
     private int retryCount;
     private String errorMessage;  // Для ошибок при отправке (для дебага)
 }

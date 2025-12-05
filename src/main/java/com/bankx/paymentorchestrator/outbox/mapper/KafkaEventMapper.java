@@ -40,7 +40,7 @@ public class KafkaEventMapper {
                     .correlationId(outboxEvent.getCorrelationId())
                     .eventType(outboxEvent.getEventType())
                     .payload(payload)
-                    .createdAt(outboxEvent.getCreateAt())
+                    .createdAt(outboxEvent.getCreatedAt())
                     .description(description)
                     .build();
         } catch (JsonProcessingException e) {

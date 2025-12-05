@@ -38,8 +38,8 @@ public class OutboxRepository {
                 event_type,
                 payload,
                 status,
-                create_at,
-                update_at,
+                created_at,
+                updated_at,
                 retry_count,
                 error_message
                 ) VALUES (?, ?, ?, ?::jsonb, ?, ?, ?, ?, ?)
@@ -51,8 +51,8 @@ public class OutboxRepository {
                 event.getEventType(),
                 event.getPayload(),
                 event.getStatus().name(),
-                event.getCreateAt(),
-                event.getUpdateAt(),
+                event.getCreatedAt(),
+                event.getUpdatedAt(),
                 event.getRetryCount(),
                 event.getErrorMessage()
         );

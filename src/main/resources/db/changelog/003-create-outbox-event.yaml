@@ -35,13 +35,13 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: create_at
+                  name: created_at
                   type: TIMESTAMP WITH TIME ZONE
                   defaultValueComputed: "NOW()"
                   constraints:
                     nullable: false
               - column:
-                  name: update_at
+                  name: updated_at
                   type: TIMESTAMP WITH TIME ZONE
                   defaultValueComputed: "NOW()"
                   constraints:

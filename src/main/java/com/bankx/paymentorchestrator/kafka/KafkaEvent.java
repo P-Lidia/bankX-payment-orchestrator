@@ -3,7 +3,7 @@ package com.bankx.paymentorchestrator.kafka;
 import com.bankx.paymentorchestrator.outbox.model.TransferPayload;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
@@ -31,7 +31,7 @@ import java.util.UUID;
  * }</pre>
  */
 
-@Data
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

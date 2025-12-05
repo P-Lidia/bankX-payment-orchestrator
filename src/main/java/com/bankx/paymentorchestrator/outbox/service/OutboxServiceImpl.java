@@ -78,8 +78,8 @@ public class OutboxServiceImpl implements OutboxService {
                 .eventType(EVENT_TYPE_CREATED)
                 .payload(payloadJson)
                 .status(OutboxStatus.NEW)
-                .createAt(Instant.now())
-                .updateAt(Instant.now())
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
                 .retryCount(0)
                 .build();
 

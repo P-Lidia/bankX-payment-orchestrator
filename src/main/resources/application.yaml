@@ -53,8 +53,8 @@ spring:
 # Кастомные настройки Kafka топиков - дописать
 kafka:
   topics:
-    sendOutboxEvent: transfer.command    # topic for send command to transfer service
-    transferStatus: transfer.status       # topic for transfer status
+    send-outbox-event: transfer.command    # topic for send command to transfer service
+    transfer-status: transfer.status       # topic for transfer status
 
 
 # Micrometer метрики для Kafka, Resilience4j для retry и circuit breaker, management (Actuator) - добавить также в помник

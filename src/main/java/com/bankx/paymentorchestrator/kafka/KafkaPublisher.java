@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 public class KafkaPublisher {
     private final KafkaTemplate<String, KafkaEvent> kafkaTemplate;
 
-    @Value("${kafka.topics.sendOutboxEvent}")
+    @Value("${kafka.topics.send-outbox-event}")
     private String sendEventTopic;
 
     /**
