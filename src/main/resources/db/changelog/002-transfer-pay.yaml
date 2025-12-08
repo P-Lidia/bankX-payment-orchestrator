@@ -48,6 +48,11 @@ databaseChangeLog:
                   name: updated_at
                   type: timestamp with time zone
                   defaultValueComputed: "NOW()"
+              - column:
+                  name: idempotency_key
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
         - addForeignKeyConstraint:
             baseTableName: transfer_pay
             baseColumnNames: idempotency_key

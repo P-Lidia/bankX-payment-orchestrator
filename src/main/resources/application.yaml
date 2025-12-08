@@ -15,6 +15,12 @@ feign:
 spring:
   application:
     name: payment-orchestrator-service
+  datasource:
+    # переменные окружения, которые будем задавать в docker-compose.yml
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
 
   kafka:
     bootstrap-servers: kafka:9092
@@ -62,8 +68,3 @@ liquibase:
   # путь к файлу миграций Liquibase
   change-log: classpath:/db/changelog/master.yaml
 
-datasource:
-  # переменные окружения, которые будем задавать в docker-compose.yml
-  url: ${SPRING_DATASOURCE_URL}
-  username: ${SPRING_DATASOURCE_USERNAME}
-  password: ${SPRING_DATASOURCE_PASSWORD}
