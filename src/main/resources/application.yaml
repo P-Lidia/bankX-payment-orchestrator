@@ -20,6 +20,9 @@ spring:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
+  liquibase:
+    # путь к файлу миграций Liquibase
+    change-log: classpath:/db/changelog/master.yaml
 
 
   kafka:
@@ -64,7 +67,5 @@ logging:
     org.apache.kafka: WARN
   # написать паттерн шаблона строки лога, когда будут метрики и трассировка
 
-liquibase:
-  # путь к файлу миграций Liquibase
-  change-log: classpath:/db/changelog/master.yaml
+
 
