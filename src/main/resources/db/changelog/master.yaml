@@ -1,0 +1,6 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/001-idempotency-requests.yaml
+  - include:
+      file: db/changelog/002-transfer-pay.yaml
+

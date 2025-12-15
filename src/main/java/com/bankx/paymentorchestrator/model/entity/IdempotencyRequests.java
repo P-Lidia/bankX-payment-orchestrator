@@ -1,0 +1,39 @@
+package com.bankx.paymentorchestrator.model.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "idempotency_requests")
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class IdempotencyRequests {
+
+    public enum PaymentStatusType {
+        PENDING, CREATED, COMPLETED, FAILED
+    }
+
+    @Id
+    @Column(name = "idempotency_key", nullable = false, length = 255)
+    private String idempotencyKey;
+
+    @Column(name = "request_id", nullable = false, length = 255, unique = true, updatable = false)
+    private String requestId;
+
+    @Column(name = "payment_status", nullable = false, length = 20)
+    @Enumerated(EnumType.STRING)
+    private PaymentStatusType status;
+
+    @Column(name = "response_body", nullable = false, columnDefinition = "jsonb")
+    private String responseBody;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private Instant createdAt;
+}

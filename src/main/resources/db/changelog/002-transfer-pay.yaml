@@ -1,0 +1,68 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-transfer-pay
+      author: marrgosha
+      changes:
+        - createTable:
+            tableName: transfer_pay
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: correlation_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: from_account_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: to_account_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount
+                  type: DECIMAL(19,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: metadata
+                  type: jsonb
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  defaultValue: CREATED
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  defaultValueComputed: "NOW()"
+              - column:
+                  name: updated_at
+                  type: timestamp with time zone
+                  defaultValueComputed: "NOW()"
+              - column:
+                  name: idempotency_key
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: transfer_pay
+            baseColumnNames: idempotency_key
+            referencedTableName: idempotency_requests
+            referencedColumnNames: idempotency_key
+            constraintName: fk_transfer_pay_idempotency_requests
+        - createIndex:
+            tableName: transfer_pay
+            indexName: idx_correlation_id
+            columns:
+              - column:
+                  name: correlation_id
+
