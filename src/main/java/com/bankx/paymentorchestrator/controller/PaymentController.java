@@ -22,7 +22,10 @@ public class PaymentController {
     private final Map<String, String> requestIdToIdMap = new ConcurrentHashMap<>();
 
     @PostMapping("/transfer")
-    public ResponseEntity<PaymentResponse> transfer(@RequestBody TransferRequest request) {
+    public ResponseEntity<PaymentResponse> transfer(
+            @RequestBody TransferRequest request,
+            @RequestHeader("Idempotency-Key") String idempotencyKey
+    ) {
         // Валидация из модели TransferRequest
         try {
             request.validate();
@@ -50,7 +53,10 @@ public class PaymentController {
     }
 
     @PostMapping("/pay")
-    public ResponseEntity<PaymentResponse> pay(@RequestBody PaymentRequest request) {
+    public ResponseEntity<PaymentResponse> pay(
+            @RequestBody PaymentRequest request,
+            @RequestHeader("Idempotency-Key") String idempotencyKey
+    ) {
         // Валидация из модели PaymentRequest
         try {
             request.validate();

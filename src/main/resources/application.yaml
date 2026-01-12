@@ -25,6 +25,10 @@ spring:
     change-log: classpath:/db/changelog/master.yaml
 
 
+  scheduler:
+    outbox:
+      interval: 5000 # миллисекунд
+
   kafka:
     bootstrap-servers: kafka:9092
     consumer:
@@ -41,6 +45,8 @@ spring:
         isolation.level: read_committed
         max.poll.records: 10  # Обработка небольшими батчами для идемпотентности
     producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       acks: all
       retries: 3
       properties:
@@ -56,6 +62,9 @@ spring:
 # Кастомные настройки Kafka топиков - дописать
 kafka:
   topics:
+    send-outbox-event: transfer.command    # topic for send command to transfer service
+    transfer-status: transfer.status       # topic for transfer status
+
 
 # Micrometer метрики для Kafka, Resilience4j для retry и circuit breaker, management (Actuator) - добавить также в помник
 
